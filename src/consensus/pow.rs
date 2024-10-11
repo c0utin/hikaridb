@@ -88,3 +88,67 @@ pub fn generate_block_with_pow<'a>(
 
     new_block
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    // Helper function to create a dummy previous block
+    fn create_genesis_block<'a>() -> Block<'a> {
+        Block::new(
+            0,
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            "0",
+            "Genesis Block",
+            0,
+            2, // difficulty of 2 (example)
+        )
+    }
+
+    #[test]
+    fn test_block_creation() {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        let block = Block::new(1, timestamp, "0", "Test Data", 0, 2);
+
+        assert_eq!(block.index, 1);
+        assert_eq!(block.timestamp, timestamp);
+        assert_eq!(block.prev_hash, "0");
+        assert_eq!(block.data, "Test Data");
+        assert_eq!(block.nonce, 0);
+        assert_eq!(block.difficulty, 2);
+        assert_eq!(block.hash, block.calculate_hash());
+    }
+
+    #[test]
+    fn test_calculate_hash() {
+        let block = Block::new(1, 1234567890, "0", "Test Data", 0, 2);
+        let expected_hash = block.calculate_hash();
+        
+        // Hash must be valid and not empty
+        assert_eq!(block.hash, expected_hash);
+        assert!(!block.hash.is_empty());
+    }
+
+    #[test]
+    fn test_proof_of_work() {
+        let genesis_block = create_genesis_block();
+        let difficulty = 2;
+        let new_block = generate_block_with_pow(&genesis_block, "New Block Data", difficulty);
+
+        // Hash must start with the correct number of leading zeros based on difficulty
+        assert!(new_block.hash.starts_with(&"0".repeat(difficulty as usize)));
+
+        // Ensure the block's data matches expectations
+        assert_eq!(new_block.index, genesis_block.index + 1);
+        assert_eq!(new_block.prev_hash, genesis_block.hash);
+        assert_eq!(new_block.data, "New Block Data");
+    }
+}
+

@@ -1,8 +1,19 @@
-mod consensus;
+use std::io;
 
 fn main() {
-    let genesis_block = consensus::pow::Block::new(0, 0, "0", "Genesis Block", 10, 2);
-    let new_block = consensus::pow::generate_block_with_pow(&genesis_block, "Some data", 1);
+    println!("hikariDB");
 
-    println!("{}", new_block);
+    loop {
+        let mut input = String::new();
+
+        match io::stdin().read_line(&mut input) {
+            Ok(_) => {
+                println!("{}", input);
+            }
+
+            Err(n) =>  {
+                println!("we not gucci {}", n)
+            }
+        }
+    }
 }
